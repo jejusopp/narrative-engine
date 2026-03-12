@@ -5,3 +5,5 @@ python-dotenv
 supabase
 tiktoken
 sentence-transformers
+numpy
+websocket-client

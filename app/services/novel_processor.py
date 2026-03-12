@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from fastapi import BackgroundTasks
+
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.novel_repository import NovelRepository
 from app.services.scene_chunker import split_into_scenes
 from app.services.scene_pipeline import analyze_scene
 
 
-def process_novel(novel_id: str, full_text: str) -> None:
+def process_novel(novel_id: str, full_text: str, background_tasks: BackgroundTasks | None = None) -> None:
     novel_repo = NovelRepository()
     char_repo = CharacterRepository()
 
@@ -20,6 +22,7 @@ def process_novel(novel_id: str, full_text: str) -> None:
             novel_id=novel_id,
             scene_index=ch["scene_index"],
             scene_text=ch["text"],
+            background_tasks=background_tasks,
         )
         previous_summary = result.get("summary") or previous_summary
 

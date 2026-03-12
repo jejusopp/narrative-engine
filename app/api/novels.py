@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.repositories.novel_repository import NovelRepository
+from app.repositories.character_repository import CharacterRepository
 from app.services.scene_chunker import split_into_scenes
 from app.services.novel_processor import process_novel
 
@@ -37,7 +38,24 @@ def process_novel_endpoint(novel_id: str, body: ProcessNovelRequest, background_
 
     repo = NovelRepository()
     repo.update_status(novel_id, "processing")
-    background_tasks.add_task(process_novel, novel_id, body.text)
+    background_tasks.add_task(process_novel, novel_id, body.text, background_tasks)
 
     return {"novel_id": novel_id, "status": "processing", "total_scenes": len(chunks)}
+
+
+@router.get("/novels/{novel_id}/characters")
+def list_characters_endpoint(novel_id: str):
+    repo = CharacterRepository()
+    return repo.list_characters(novel_id)
+
+
+@router.delete("/novels/{novel_id}")
+def delete_novel_endpoint(novel_id: str):
+    repo = NovelRepository()
+    try:
+        repo.get_novel(novel_id)
+        repo.delete_novel(novel_id)
+        return {"novel_id": novel_id, "status": "deleted"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Novel not found")
 

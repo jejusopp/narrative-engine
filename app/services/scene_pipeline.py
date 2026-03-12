@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from fastapi import BackgroundTasks
+
 from app.llm.embedding_client import embed
 from app.repositories.character_repository import CharacterRepository
 from app.repositories.relationship_repository import RelationshipRepository
@@ -9,7 +11,7 @@ from app.services import scene_context_retriever
 from app.services.character_resolver import resolve_all
 from app.services.prompt_generator import generate as generate_image_prompt
 from app.services.scene_processor import process as process_scene
-from app.services.image_job_service import create_job as create_image_job
+from app.services.image_service import ImageService
 
 
 def _build_embedding_content(summary: str, location: str, tone: str, characters: list[dict]) -> str:
@@ -22,7 +24,7 @@ def _build_embedding_content(summary: str, location: str, tone: str, characters:
     )
 
 
-def analyze_scene(novel_id: str, scene_index: int, scene_text: str) -> dict:
+def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_tasks: BackgroundTasks | None = None) -> dict:
     char_repo = CharacterRepository()
     known_characters = char_repo.list_characters(novel_id)
 
@@ -53,6 +55,8 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str) -> dict:
     for ch in resolved_characters:
         row = char_repo.upsert_character(novel_id=novel_id, name=ch["name"], description=ch.get("description"))
         name_to_id[row["name"]] = row["id"]
+        # character_appearances 테이블에 등장 기록 추가
+        char_repo.add_appearance(character_id=row["id"], scene_id=scene_row["id"])
 
     # relationships 저장 (캐릭터 id가 없으면 스킵)
     rel_repo = RelationshipRepository()
@@ -87,9 +91,13 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str) -> dict:
     emb = embed(content)
     SceneEmbeddingRepository().upsert(scene_id=scene_row["id"], novel_id=novel_id, content=content, embedding=emb)
 
-    # 이미지 프롬프트 및 job 생성
+    # 이미지 프롬프트 생성
     image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=resolved_characters)
-    create_image_job(scene_id=scene_row["id"], prompt=image_prompt)
+    
+    # 이미지 생성 작업 실행 ( BackgroundTasks 가 있을 경우에만 실행 - 자동 생성 방지 )
+    if background_tasks:
+        image_service = ImageService()
+        background_tasks.add_task(image_service.generate_image_for_scene, scene_row["id"], image_prompt)
 
     return {
         "scene_id": scene_row["id"],

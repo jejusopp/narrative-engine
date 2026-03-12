@@ -4,7 +4,7 @@ import re
 
 
 _TITLE_RE = re.compile(r"^(mr|mrs|ms|dr|professor|lord|captain)\.?\s+", re.IGNORECASE)
-_IGNORE = {"man", "woman", "boy", "girl", "soldier", "stranger", "person"}
+_IGNORE = {"man", "woman", "boy", "girl", "soldier", "stranger", "person", "나", "내", "i", "me"}
 
 
 def normalize_name(name: str) -> str:

@@ -43,20 +43,21 @@ Relevant past scenes from this novel (use for consistency):
 Rules:
 - Return valid JSON only, no markdown
 - Use known character names when possible to avoid duplicates
+- In first-person narratives, identify the real name of "I" (나/내) if mentioned and use it as the character name.
 - Ignore generic background characters (man, woman, soldier, stranger)
 - Characters list must include ONLY named or clearly identified characters
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "..."}}
 
-Expected JSON Structure:
+Expected JSON Structure (Strictly follow this structure):
 {{
   "summary": "Short scene summary",
   "location": "Where this scene happens",
   "tone": "Emotional tone",
   "characters": [
-    {{"name": "민준", "description": "주머니에서 오래된 편지를 꺼낸 남자"}}
+    {{"name": "CHARACTER_NAME", "description": "CHARACTER_DESCRIPTION"}}
   ],
   "relationships": [
-    {{"character_a": "민준", "character_b": "지연", "relationship": "10년 전 친구", "confidence": 0.9}}
+    {{"character_a": "NAME_A", "character_b": "NAME_B", "relationship": "RELATIONSHIP_TYPE", "confidence": 0.9}}
   ]
 }}
 

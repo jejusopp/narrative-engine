@@ -2,67 +2,76 @@ from __future__ import annotations
 
 import re
 from typing import Any
+import numpy as np
 
-import tiktoken
-
-
-_CHAPTER_SPLIT_RE = re.compile(r"(?i)(chapter\s+\d+|제\s*\d+\s*장|\*{3}|---)")
+from app.llm import embedding_client
 
 
-def _token_count(text: str) -> int:
-    enc = tiktoken.get_encoding("cl100k_base")
-    return len(enc.encode(text))
+def _cosine_similarity(v1: list[float], v2: list[float]) -> float:
+    a = np.array(v1)
+    b = np.array(v2)
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
-def split_into_scenes(text: str) -> list[dict[str, Any]]:
-    # Step 1. 전처리
-    cleaned = re.sub(r"[ \t]+", " ", text)
-    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+def split_into_scenes(text: str, window_size: int = 3, threshold: float = 0.65, min_paragraphs: int = 2) -> list[dict[str, Any]]:
+    """
+    임베딩 기반 시맨틱 장면 분리 알고리즘 (chunking.md 참조)
+    """
+    # Step 1. 문단 분리
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    if not paragraphs:
+        return []
+    
+    if len(paragraphs) < window_size:
+        return [{"scene_index": 1, "text": "\n\n".join(paragraphs)}]
 
-    # Step 2. 1차 분리
-    parts = [p.strip() for p in _CHAPTER_SPLIT_RE.split(cleaned) if p and p.strip()]
+    # Step 2. 슬라이딩 윈도우 생성
+    windows: list[str] = []
+    for i in range(len(paragraphs) - window_size + 1):
+        window_text = " ".join(paragraphs[i : i + window_size])
+        windows.append(window_text)
 
-    # split()이 구분자도 포함할 수 있으니, 구분자 단독 조각 제거
-    chunks: list[str] = []
-    for p in parts:
-        if _CHAPTER_SPLIT_RE.fullmatch(p):
-            continue
-        chunks.append(p)
+    # Step 3. 임베딩 생성
+    embeddings = embedding_client.embed_batch(windows)
 
-    # Step 3. token 초과 시 문단 재분리
-    refined: list[str] = []
-    for ch in chunks:
-        if _token_count(ch) <= 1200:
-            refined.append(ch)
-            continue
-        paragraphs = [pp.strip() for pp in ch.split("\n\n") if pp.strip()]
-        buf: list[str] = []
-        buf_tokens = 0
-        for pp in paragraphs:
-            pp_tokens = _token_count(pp)
-            if buf and (buf_tokens + pp_tokens) > 1200:
-                refined.append("\n\n".join(buf).strip())
-                buf = [pp]
-                buf_tokens = pp_tokens
-            else:
-                buf.append(pp)
-                buf_tokens += pp_tokens
-        if buf:
-            refined.append("\n\n".join(buf).strip())
+    # Step 4. 유사도 계산 및 경계 감지
+    boundaries: list[int] = []
+    for i in range(len(embeddings) - 1):
+        sim = _cosine_similarity(embeddings[i], embeddings[i + 1])
+        if sim < threshold:
+            # 경계 지점: i + window_size 문단 이전
+            boundaries.append(i + window_size)
 
-    # Step 4. 짧은 chunk 병합
-    merged: list[str] = []
-    i = 0
-    while i < len(refined):
-        cur = refined[i]
-        if _token_count(cur) < 200 and (i + 1) < len(refined):
-            nxt = refined[i + 1]
-            merged.append((cur + "\n\n" + nxt).strip())
-            i += 2
+    # Step 5. 장면 구성 및 최소 길이 보장
+    scenes: list[list[str]] = []
+    start = 0
+    for b in boundaries:
+        current_scene_paras = paragraphs[start:b]
+        if len(current_scene_paras) >= min_paragraphs or not scenes:
+            scenes.append(current_scene_paras)
+            start = b
         else:
-            merged.append(cur)
-            i += 1
+            # 너무 짧으면 이전 장면에 병합
+            scenes[-1].extend(current_scene_paras)
+            start = b
 
-    # Step 5. scene_index
-    return [{"scene_index": idx + 1, "text": ch} for idx, ch in enumerate(merged) if ch.strip()]
+    # 남은 문단 처리
+    remaining = paragraphs[start:]
+    if remaining:
+        if not scenes:
+            scenes.append(remaining)
+        elif len(remaining) < min_paragraphs:
+            scenes[-1].extend(remaining)
+        else:
+            scenes.append(remaining)
+
+    # Step 6. 최종 결과 반환
+    result = []
+    for idx, scene_paras in enumerate(scenes):
+        result.append({
+            "scene_index": idx + 1,
+            "text": "\n\n".join(scene_paras).strip()
+        })
+
+    return result
 

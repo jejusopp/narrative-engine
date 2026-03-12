@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api import health, novels, scenes
+from app.api import health, novels, scenes, characters
 
 
 def create_app() -> FastAPI:
@@ -10,6 +10,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(novels.router)
     app.include_router(scenes.router)
+    app.include_router(characters.router)
     return app
 
 
