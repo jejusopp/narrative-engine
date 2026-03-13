@@ -8,22 +8,23 @@ def generate(scene_summary: str, characters: list[dict]) -> str:
     prompt = f"""
 You are a professional AI image prompt engineer.
 
-Create a high quality prompt for an AI image generation model.
+Create a high quality prompt for an AI image generation model based on the given scene details.
+The inputs are in Korean, but your output (the prompt) MUST be in English.
 
-Scene Summary:
+Scene Summary (Korean):
 {scene_summary}
 
-Characters:
+Characters (Korean):
 {", ".join(character_names)}
 
 Style requirements:
-fantasy illustration
-cinematic lighting
-dramatic composition
-high detail
-epic atmosphere
+- fantasy illustration, cinematic lighting, dramatic composition, high detail, epic atmosphere
+- masterpiece, beautiful scenery, Studio Ghibli art style
 
-Return a single prompt sentence only. No explanation.
+Output Rules:
+- Return ONLY the English prompt sentence. 
+- No Korean in the output.
+- No explanation.
 """.strip()
 
     return call_text(prompt, temperature=0.3)

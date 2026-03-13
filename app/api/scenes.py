@@ -35,7 +35,7 @@ def analyze_scene_endpoint(body: AnalyzeSceneRequest, background_tasks: Backgrou
 def list_novel_scenes_endpoint(novel_id: str):
     repo = SceneRepository()
     scenes = repo.list_scenes_by_novel(novel_id)
-    # id -> scene_id 매핑
+    # id -> scene_id 매핑, image_url 포함
     return [{**s, "scene_id": s["id"]} for s in scenes]
 
 
@@ -73,7 +73,8 @@ def generate_image_endpoint(scene_id: str, background_tasks: BackgroundTasks):
     image_prompt = generate_image_prompt(scene_summary=summary, characters=characters)
     
     # 3. 백그라운드 작업으로 이미지 생성 실행
+    sb.table("scenes").update({"status": "processing"}).eq("id", scene_id).execute()
     background_tasks.add_task(image_service.generate_image_for_scene, scene_id, image_prompt)
     
-    return {"scene_id": scene_id, "status": "processing", "message": "Image generation started in background"}
+    return {"scene_id": scene_id, "image_status": "processing", "message": "Image generation started in background"}
 

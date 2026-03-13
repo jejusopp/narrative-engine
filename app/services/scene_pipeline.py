@@ -94,10 +94,11 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
     # 이미지 프롬프트 생성
     image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=resolved_characters)
     
-    # 이미지 생성 작업 실행 ( BackgroundTasks 가 있을 경우에만 실행 - 자동 생성 방지 )
-    if background_tasks:
-        image_service = ImageService()
-        background_tasks.add_task(image_service.generate_image_for_scene, scene_row["id"], image_prompt)
+    # 2024-03-13 수정: 소설 분석 시 이미지를 자동으로 생성하지 않도록 변경. 
+    # 사용자가 직접 생성 버튼을 누를 때만 (POST /scenes/{scene_id}/generate-image) 생성하도록 함.
+    # if background_tasks:
+    #     image_service = ImageService()
+    #     background_tasks.add_task(image_service.generate_image_for_scene, scene_row["id"], image_prompt)
 
     return {
         "scene_id": scene_row["id"],

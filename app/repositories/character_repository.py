@@ -38,16 +38,33 @@ class CharacterRepository:
             return None
         char = res.data[0]
 
-        # character_appearances 를 통해 등장한 scene 목록 조회 (scene_index 순)
+        # character_appearances 를 통해 등장한 scene 목록 조회 (scene_index 순), 이미지 포함
         appearances_res = (
             self.sb.table("character_appearances")
-            .select("scene:scenes(id, scene_index, summary, location, tone)")
+            .select("scene:scenes(id, scene_index, summary, location, tone, images(image_url))")
             .eq("character_id", character_id)
             .execute()
         )
         
         # 중복 제거 및 정렬 (Supabase select join 시 리스트로 옴)
-        scenes = [a["scene"] for a in appearances_res.data if a.get("scene")]
+        scenes = []
+        for a in appearances_res.data:
+            if not a.get("scene"):
+                continue
+            s = a["scene"]
+            image_url = None
+            if s.get("images") and len(s["images"]) > 0:
+                image_url = s["images"][0]["image_url"]
+            
+            scenes.append({
+                "id": s["id"],
+                "scene_index": s["scene_index"],
+                "summary": s["summary"],
+                "location": s["location"],
+                "tone": s["tone"],
+                "image_url": image_url
+            })
+        
         scenes.sort(key=lambda x: x["scene_index"])
         
         char["scenes"] = scenes

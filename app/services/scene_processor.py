@@ -47,17 +47,18 @@ Rules:
 - Ignore generic background characters (man, woman, soldier, stranger)
 - Characters list must include ONLY named or clearly identified characters
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "..."}}
+- IMPORTANT: All values in the JSON (summary, location, tone, description, relationship) MUST be written in Korean (한국어).
 
 Expected JSON Structure (Strictly follow this structure):
 {{
-  "summary": "Short scene summary",
-  "location": "Where this scene happens",
-  "tone": "Emotional tone",
+  "summary": "장면에 대한 요약 (한국어)",
+  "location": "장면의 장소 (한국어)",
+  "tone": "장면의 분위기 (한국어)",
   "characters": [
-    {{"name": "CHARACTER_NAME", "description": "CHARACTER_DESCRIPTION"}}
+    {{"name": "캐릭터 이름 (한국어)", "description": "캐릭터에 대한 간단한 설명 (한국어)"}}
   ],
   "relationships": [
-    {{"character_a": "NAME_A", "character_b": "NAME_B", "relationship": "RELATIONSHIP_TYPE", "confidence": 0.9}}
+    {{"character_a": "이름_A", "character_b": "이름_B", "relationship": "관계 내용 (한국어)", "confidence": 0.9}}
   ]
 }}
 

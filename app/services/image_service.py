@@ -53,6 +53,13 @@ class ImageService:
 
             # 3. 워크플로우 주입
             workflow = self.workflow_template.copy()
+            
+            # 2024-03-13 수정: 16:9 비율(896x512)로 설정 (SDXL 최적 해상도 기준)
+            # EmptyLatentImage 노드 (ID: 5)의 width, height 수정
+            if "5" in workflow and "inputs" in workflow["5"]:
+                workflow["5"]["inputs"]["width"] = 896
+                workflow["5"]["inputs"]["height"] = 512
+            
             # sdxl_base.json의 구조에 따라 노드 ID 6번이 Positive Prompt라고 가정
             if "6" in workflow and "inputs" in workflow["6"]:
                 workflow["6"]["inputs"]["text"] = enriched_prompt
@@ -77,6 +84,9 @@ class ImageService:
             # 6. DB 기록
             self.repo.save_image(scene_id, job_id, image_url)
             self.repo.update_job_status(job_id, "completed")
+            # 씬 상태를 완료로 업데이트 (폴링 중단 유도)
+            from app.db.supabase import get_supabase
+            get_supabase().table("scenes").update({"status": "completed"}).eq("id", scene_id).execute()
 
             logger.info(f"Successfully completed image generation for scene {scene_id}")
             return {"status": "success", "image_url": image_url}
@@ -84,4 +94,7 @@ class ImageService:
         except Exception as e:
             logger.error(f"Error generating image for job {job_id}: {str(e)}")
             self.repo.update_job_status(job_id, "failed")
+            # 씬 상태를 실패로 업데이트
+            from app.db.supabase import get_supabase
+            get_supabase().table("scenes").update({"status": "failed"}).eq("id", scene_id).execute()
             return {"status": "failed", "error": str(e)}

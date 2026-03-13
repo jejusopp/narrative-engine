@@ -15,6 +15,15 @@ class NovelRepository:
     def update_status(self, novel_id: str, status: str) -> None:
         self.sb.table("novels").update({"status": status}).eq("id", novel_id).execute()
 
+    def update_content(self, novel_id: str, content: str) -> None:
+        self.sb.table("novels").update({"content": content}).eq("id", novel_id).execute()
+
+    def get_novel_content(self, novel_id: str) -> str | None:
+        res = self.sb.table("novels").select("content").eq("id", novel_id).limit(1).execute()
+        if not res.data:
+            return None
+        return res.data[0].get("content")
+
     def get_novel(self, novel_id: str) -> dict:
         res = self.sb.table("novels").select("*").eq("id", novel_id).limit(1).execute()
         if not res.data:
