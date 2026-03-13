@@ -21,6 +21,10 @@ class NovelRepository:
             raise KeyError("novel not found")
         return res.data[0]
 
+    def list_novels(self) -> list[dict]:
+        res = self.sb.table("novels").select("*").order("created_at", desc=True).execute()
+        return res.data or []
+
     def delete_novel(self, novel_id: str) -> None:
         self.sb.table("novels").delete().eq("id", novel_id).execute()
 

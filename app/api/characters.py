@@ -18,4 +18,12 @@ def get_character_detail_endpoint(character_id: str):
     relationships = rel_repo.list_character_relationships(character_id)
     char["relationships"] = relationships
 
+    # id -> character_id 매핑
+    char["character_id"] = char["id"]
     return char
+
+
+@router.get("/characters/{character_id}/relationships")
+def get_character_relationships_endpoint(character_id: str):
+    rel_repo = RelationshipRepository()
+    return rel_repo.list_character_relationships(character_id)

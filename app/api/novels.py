@@ -29,6 +29,24 @@ def create_novel(body: CreateNovelRequest):
     return {"novel_id": novel["id"], "title": novel["title"], "status": novel.get("status", "pending")}
 
 
+@router.get("/novels")
+def list_novels_endpoint():
+    repo = NovelRepository()
+    novels = repo.list_novels()
+    # 프론트엔드 기대 형식에 맞게 필드명 매핑 (id -> novel_id)
+    return [{"novel_id": n["id"], "title": n["title"], "author": n.get("author"), "status": n.get("status"), "created_at": n.get("created_at")} for n in novels]
+
+
+@router.get("/novels/{novel_id}")
+def get_novel_endpoint(novel_id: str):
+    repo = NovelRepository()
+    try:
+        novel = repo.get_novel(novel_id)
+        return {"novel_id": novel["id"], "title": novel["title"], "author": novel.get("author"), "status": novel.get("status"), "created_at": novel.get("created_at")}
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Novel not found")
+
+
 @router.post("/novels/{novel_id}/process")
 def process_novel_endpoint(novel_id: str, body: ProcessNovelRequest, background_tasks: BackgroundTasks):
     if not body.text.strip():
@@ -46,7 +64,9 @@ def process_novel_endpoint(novel_id: str, body: ProcessNovelRequest, background_
 @router.get("/novels/{novel_id}/characters")
 def list_characters_endpoint(novel_id: str):
     repo = CharacterRepository()
-    return repo.list_characters(novel_id)
+    characters = repo.list_characters(novel_id)
+    # id -> character_id 매핑
+    return [{**c, "character_id": c["id"]} for c in characters]
 
 
 @router.delete("/novels/{novel_id}")

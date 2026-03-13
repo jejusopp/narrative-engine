@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 
 from app.services.scene_pipeline import analyze_scene
 from app.services.image_service import ImageService
+from app.repositories.scene_repository import SceneRepository
 from app.db.supabase import get_supabase
 
 
@@ -28,6 +29,25 @@ def analyze_scene_endpoint(body: AnalyzeSceneRequest, background_tasks: Backgrou
         scene_text=body.text,
         background_tasks=background_tasks
     )
+
+
+@router.get("/novels/{novel_id}/scenes")
+def list_novel_scenes_endpoint(novel_id: str):
+    repo = SceneRepository()
+    scenes = repo.list_scenes_by_novel(novel_id)
+    # id -> scene_id 매핑
+    return [{**s, "scene_id": s["id"]} for s in scenes]
+
+
+@router.get("/scenes/{scene_id}")
+def get_scene_endpoint(scene_id: str):
+    repo = SceneRepository()
+    scene = repo.get_scene_by_id(scene_id)
+    if not scene:
+        raise HTTPException(status_code=404, detail="Scene not found")
+    
+    # id -> scene_id 매핑
+    return {**scene, "scene_id": scene["id"]}
 
 
 @router.post("/scenes/{scene_id}/generate-image")

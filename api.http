@@ -56,3 +56,23 @@ Accept: application/json
 @scene_id = 388bc6bc-109e-4705-8815-f4b01b56360b
 POST {{host}}/scenes/{{scene_id}}/generate-image
 Accept: application/json
+
+### 9. List Novels
+GET {{host}}/novels
+Accept: application/json
+
+### 10. Get Novel Detail
+GET {{host}}/novels/{{novel_id}}
+Accept: application/json
+
+### 11. List Scenes in Novel
+GET {{host}}/novels/{{novel_id}}/scenes
+Accept: application/json
+
+### 12. Get Scene Detail
+GET {{host}}/scenes/{{scene_id}}
+Accept: application/json
+
+### 13. Get Character Relationships
+GET {{host}}/characters/{{character_id}}/relationships
+Accept: application/json
