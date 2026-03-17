@@ -39,6 +39,14 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
 
     resolved_characters = resolve_all(result.get("characters", []), novel_id=novel_id, known_characters=known_characters)
 
+    # 주인공 실명이 밝혀진 경우 → DB에서 "주인공" → 실명으로 교체
+    narrator_real_name = (result.get("narrator_real_name") or "").strip()
+    if narrator_real_name:
+        char_repo.rename_character(novel_id=novel_id, old_name="주인공", new_name=narrator_real_name)
+        for ch in resolved_characters:
+            if ch.get("name") == "주인공":
+                ch["name"] = narrator_real_name
+
     scene_repo = SceneRepository()
     scene_row = scene_repo.save_scene(
         novel_id=novel_id,
@@ -53,7 +61,15 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
     # upsert characters (resolve된 이름 기준)
     name_to_id: dict[str, str] = {}
     for ch in resolved_characters:
-        row = char_repo.upsert_character(novel_id=novel_id, name=ch["name"], description=ch.get("description"))
+        raw_appearance = ch.get("appearance")
+        if raw_appearance:
+            # LLM이 배열로 반환한 경우 → 문자열로 합치기
+            if isinstance(raw_appearance, list):
+                raw_appearance = ", ".join(str(x) for x in raw_appearance if x)
+            # "남성, null" / "null, 은발" 등 null 토큰 제거 후 빈 값이면 None 처리
+            parts = [p.strip() for p in str(raw_appearance).split(",") if p.strip().lower() != "null" and p.strip()]
+            raw_appearance = ", ".join(parts) if parts else None
+        row = char_repo.upsert_character(novel_id=novel_id, name=ch["name"], description=ch.get("description"), appearance=raw_appearance)
         name_to_id[row["name"]] = row["id"]
         # character_appearances 테이블에 등장 기록 추가
         char_repo.add_appearance(character_id=row["id"], scene_id=scene_row["id"])

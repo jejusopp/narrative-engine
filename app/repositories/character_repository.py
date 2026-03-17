@@ -7,7 +7,7 @@ class CharacterRepository:
     def __init__(self):
         self.sb = get_supabase()
 
-    def upsert_character(self, novel_id: str, name: str, description: str | None = None) -> dict:
+    def upsert_character(self, novel_id: str, name: str, description: str | None = None, appearance: str | None = None) -> dict:
         payload = {
             "novel_id": novel_id,
             "name": name,
@@ -16,7 +16,12 @@ class CharacterRepository:
         res = self.sb.table("characters").upsert(payload, on_conflict="novel_id,name").execute()
         row = res.data[0]
         # appearance_count 증가는 MVP에서는 단순 update로 처리
-        self.sb.table("characters").update({"appearance_count": (row.get("appearance_count") or 0) + 1}).eq("id", row["id"]).execute()
+        update_payload: dict = {"appearance_count": (row.get("appearance_count") or 0) + 1}
+        # appearance는 새 정보가 있을 때만 덮어씀 (기존 값 보존)
+        if appearance and not row.get("appearance"):
+            update_payload["appearance"] = appearance
+        self.sb.table("characters").update(update_payload).eq("id", row["id"]).execute()
+        row.update(update_payload)
         return row
 
     def add_appearance(self, character_id: str, scene_id: str) -> dict:
@@ -30,6 +35,14 @@ class CharacterRepository:
     def list_characters(self, novel_id: str) -> list[dict]:
         res = self.sb.table("characters").select("id,name,description,appearance_count").eq("novel_id", novel_id).execute()
         return res.data or []
+
+    def rename_character(self, novel_id: str, old_name: str, new_name: str) -> dict | None:
+        res = self.sb.table("characters").select("id").eq("novel_id", novel_id).eq("name", old_name).execute()
+        if not res.data:
+            return None
+        char_id = res.data[0]["id"]
+        updated = self.sb.table("characters").update({"name": new_name}).eq("id", char_id).execute()
+        return updated.data[0] if updated.data else None
 
     def get_character_detail(self, character_id: str) -> dict | None:
         # 캐릭터 기본 정보 조회

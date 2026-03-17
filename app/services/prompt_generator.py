@@ -4,28 +4,27 @@ from app.llm.groq_client import call_text
 
 
 def generate(scene_summary: str, characters: list[dict]) -> str:
-    character_names = [c.get("name") for c in characters if c.get("name")]
-    prompt = f"""
-You are a professional AI image prompt engineer.
+    # 씬 요약 → 짧은 영어 한 줄로 번역
+    scene_en = call_text(
+        f"Translate the following Korean scene summary into one concise English sentence. Return only the sentence.\n\n{scene_summary}",
+        temperature=0.1,
+    )
 
-Create a high quality prompt for an AI image generation model based on the given scene details.
-The inputs are in Korean, but your output (the prompt) MUST be in English.
+    # 캐릭터 블록 조립
+    character_lines = []
+    for c in characters:
+        name = (c.get("name") or "").strip()
+        if not name:
+            continue
+        raw = c.get("appearance") or ""
+        if isinstance(raw, list):
+            raw = ", ".join(str(x) for x in raw if x)
+        appearance = raw.strip()
+        if appearance:
+            character_lines.append(f"{name}:\n{appearance}")
+        else:
+            character_lines.append(name)
 
-Scene Summary (Korean):
-{scene_summary}
+    characters_block = "\n\n".join(character_lines) if character_lines else "None"
 
-Characters (Korean):
-{", ".join(character_names)}
-
-Style requirements:
-- fantasy illustration, cinematic lighting, dramatic composition, high detail, epic atmosphere
-- masterpiece, beautiful scenery, Studio Ghibli art style
-
-Output Rules:
-- Return ONLY the English prompt sentence. 
-- No Korean in the output.
-- No explanation.
-""".strip()
-
-    return call_text(prompt, temperature=0.3)
-
+    return f"Scene:\n{scene_en}\n\nCharacters:\n{characters_block}"
