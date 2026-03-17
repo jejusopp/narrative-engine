@@ -2,29 +2,31 @@ from __future__ import annotations
 
 from app.llm.groq_client import call_text
 
+_DEFAULT_APPEARANCE = "a person"
+
 
 def generate(scene_summary: str, characters: list[dict]) -> str:
-    # 씬 요약 → 짧은 영어 한 줄로 번역
-    scene_en = call_text(
-        f"Translate the following Korean scene summary into one concise English sentence. Return only the sentence.\n\n{scene_summary}",
-        temperature=0.1,
-    )
-
-    # 캐릭터 블록 조립
-    character_lines = []
+    char_map = {}
     for c in characters:
         name = (c.get("name") or "").strip()
         if not name:
             continue
-        raw = c.get("appearance") or ""
+        raw = c.get("appearance")
         if isinstance(raw, list):
             raw = ", ".join(str(x) for x in raw if x)
-        appearance = raw.strip()
-        if appearance:
-            character_lines.append(f"{name}:\n{appearance}")
-        else:
-            character_lines.append(name)
+        appearance = (raw or "").strip()
+        char_map[name] = appearance if appearance else _DEFAULT_APPEARANCE
 
-    characters_block = "\n\n".join(character_lines) if character_lines else "None"
+    char_map_lines = "\n".join(f'- "{k}" → "{v}"' for k, v in char_map.items())
 
-    return f"Scene:\n{scene_en}\n\nCharacters:\n{characters_block}"
+    prompt = f"""Translate the following Korean scene summary into one concise English sentence for image generation.
+Replace each character name with their appearance description using the mapping below.
+Return only the final English sentence.
+
+Character mapping:
+{char_map_lines if char_map_lines else "None"}
+
+Scene summary (Korean):
+{scene_summary}"""
+
+    return call_text(prompt, temperature=0.1)

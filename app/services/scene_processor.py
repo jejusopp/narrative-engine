@@ -57,7 +57,7 @@ Rules:
 - If a role-based reference cannot be matched to any known character AND no real name is given in this scene, skip that character entirely.
 - Characters list must include ONLY named or clearly identified characters
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "...", "appearance": "..."}}
-- "appearance": STRICTLY physical and visible traits only — gender, hair, eyes, skin, body build. EXCLUDE anything that cannot be drawn: voice, sound, smell, emotion, action, personality. Always list gender first if determinable, followed by other physical traits. Max 3 items. If no physical traits are described at all, set to null.
+- "appearance": STRICTLY physical and visible traits only. Always include gender and estimated age group (child / teenager / young adult / middle-aged / elderly) first — infer from context if not explicitly stated. Then add up to 2 more visual traits (hair, eyes, build, etc.). EXCLUDE anything that cannot be drawn: voice, sound, smell, emotion, action, personality. Max 3 items total.
 - IMPORTANT: All values in the JSON MUST be written in Korean.
 
 Expected JSON Structure (Strictly follow this structure):
