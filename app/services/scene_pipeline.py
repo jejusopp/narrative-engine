@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import BackgroundTasks
+
+logger = logging.getLogger(__name__)
 
 from app.llm.embedding_client import embed
 from app.repositories.character_repository import CharacterRepository
@@ -109,10 +113,12 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
 
     # 이미지 프롬프트 생성 — DB에 저장된 appearance를 fallback으로 사용
     db_appearance = {kc["name"]: kc.get("appearance") for kc in char_repo.list_characters(novel_id)}
+    logger.info("[scene_pipeline] db_appearance: %s", db_appearance)
     chars_for_prompt = [
         {**ch, "appearance": ch.get("appearance") or db_appearance.get(ch.get("name"))}
         for ch in resolved_characters
     ]
+    logger.info("[scene_pipeline] chars_for_prompt: %s", chars_for_prompt)
     image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=chars_for_prompt)
     
     # 2024-03-13 수정: 소설 분석 시 이미지를 자동으로 생성하지 않도록 변경. 

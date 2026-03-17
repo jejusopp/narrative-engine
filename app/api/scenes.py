@@ -61,8 +61,8 @@ def generate_image_endpoint(scene_id: str, background_tasks: BackgroundTasks):
     scene = res.data[0]
     summary = scene["summary"]
     
-    # 등장인물 목록 가져오기 (더 나은 프롬프트를 위해)
-    char_res = sb.table("character_appearances").select("characters(name)").eq("scene_id", scene_id).execute()
+    # 등장인물 목록 가져오기 (appearance 포함)
+    char_res = sb.table("character_appearances").select("characters(name, appearance)").eq("scene_id", scene_id).execute()
     characters = [c["characters"] for c in char_res.data if c.get("characters")]
     
     # 1. 이미지 서비스 초기화
