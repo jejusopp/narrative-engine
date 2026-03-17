@@ -107,8 +107,13 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
     emb = embed(content)
     SceneEmbeddingRepository().upsert(scene_id=scene_row["id"], novel_id=novel_id, content=content, embedding=emb)
 
-    # 이미지 프롬프트 생성
-    image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=resolved_characters)
+    # 이미지 프롬프트 생성 — DB에 저장된 appearance를 fallback으로 사용
+    db_appearance = {kc["name"]: kc.get("appearance") for kc in char_repo.list_characters(novel_id)}
+    chars_for_prompt = [
+        {**ch, "appearance": ch.get("appearance") or db_appearance.get(ch.get("name"))}
+        for ch in resolved_characters
+    ]
+    image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=chars_for_prompt)
     
     # 2024-03-13 수정: 소설 분석 시 이미지를 자동으로 생성하지 않도록 변경. 
     # 사용자가 직접 생성 버튼을 누를 때만 (POST /scenes/{scene_id}/generate-image) 생성하도록 함.

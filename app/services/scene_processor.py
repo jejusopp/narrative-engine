@@ -48,7 +48,7 @@ Past scene references (for name/relationship consistency ONLY — do NOT summari
 Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
-- "summary" must describe ONE key visual moment from the scene as if capturing a single illustration frame — who is doing what, who is facing whom, what is happening at that instant. Keep it concise (1-2 sentences).
+- "summary" must capture ONE visual moment suitable for a single illustration. Describe what each character is doing or expressing at that instant — their action, posture, or reaction toward each other. Write as a plain present-tense statement. Do NOT use meta words that describe the scene as a scene. Keep it to 1-2 sentences.
 - Use known character names when possible to avoid duplicates
 - In first-person narratives, the narrator ("나"/"내") should be listed as "주인공" unless their real name is explicitly mentioned in the scene.
 - If the narrator's real name is revealed in the scene, set "narrator_real_name" to that name AND use the real name in the characters list instead of "주인공".
@@ -58,19 +58,19 @@ Rules:
 - Characters list must include ONLY named or clearly identified characters
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "...", "appearance": "..."}}
 - "appearance": STRICTLY physical and visible traits only — gender, hair, eyes, skin, body build. EXCLUDE anything that cannot be drawn: voice, sound, smell, emotion, action, personality. Always list gender first if determinable, followed by other physical traits. Max 3 items. If no physical traits are described at all, set to null.
-- IMPORTANT: All values in the JSON (summary, location, tone, description, relationship, appearance) MUST be written in Korean (한국어).
+- IMPORTANT: All values in the JSON MUST be written in Korean.
 
 Expected JSON Structure (Strictly follow this structure):
 {{
-  "summary": "한 장면의 핵심 순간 묘사 (한국어, 1-2문장)",
-  "location": "장면의 장소 (한국어)",
-  "tone": "장면의 분위기 (한국어)",
+  "summary": "one key visual moment (Korean, 1-2 sentences)",
+  "location": "place where the scene occurs (Korean)",
+  "tone": "mood or atmosphere of the scene (Korean)",
   "narrator_real_name": null,
   "characters": [
-    {{"name": "character name", "description": "brief character description (Korean)", "appearance": "visual traits only, or null"}}
+    {{"name": "character name (Korean)", "description": "brief character description (Korean)", "appearance": "visual traits only, or null"}}
   ],
   "relationships": [
-    {{"character_a": "이름_A", "character_b": "이름_B", "relationship": "관계 내용 (한국어)", "confidence": 0.9}}
+    {{"character_a": "name A", "character_b": "name B", "relationship": "relationship description (Korean)", "confidence": 0.9}}
   ]
 }}
 """.strip()

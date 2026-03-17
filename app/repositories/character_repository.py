@@ -8,21 +8,31 @@ class CharacterRepository:
         self.sb = get_supabase()
 
     def upsert_character(self, novel_id: str, name: str, description: str | None = None, appearance: str | None = None) -> dict:
-        payload = {
-            "novel_id": novel_id,
-            "name": name,
-            "description": description,
-        }
-        res = self.sb.table("characters").upsert(payload, on_conflict="novel_id,name").execute()
-        row = res.data[0]
-        # appearance_count 증가는 MVP에서는 단순 update로 처리
-        update_payload: dict = {"appearance_count": (row.get("appearance_count") or 0) + 1}
-        # appearance는 새 정보가 있을 때만 덮어씀 (기존 값 보존)
-        if appearance and not row.get("appearance"):
-            update_payload["appearance"] = appearance
-        self.sb.table("characters").update(update_payload).eq("id", row["id"]).execute()
-        row.update(update_payload)
-        return row
+        # 기존 캐릭터 조회
+        existing = self.sb.table("characters").select("*").eq("novel_id", novel_id).eq("name", name).execute()
+
+        if existing.data:
+            row = existing.data[0]
+            update_payload: dict = {
+                "description": description,
+                "appearance_count": (row.get("appearance_count") or 0) + 1,
+            }
+            # appearance는 기존 값이 없을 때만 저장
+            if appearance and not row.get("appearance"):
+                update_payload["appearance"] = appearance
+            self.sb.table("characters").update(update_payload).eq("id", row["id"]).execute()
+            row.update(update_payload)
+            return row
+        else:
+            payload = {
+                "novel_id": novel_id,
+                "name": name,
+                "description": description,
+                "appearance": appearance,
+                "appearance_count": 1,
+            }
+            res = self.sb.table("characters").insert(payload).execute()
+            return res.data[0]
 
     def add_appearance(self, character_id: str, scene_id: str) -> dict:
         payload = {
@@ -33,7 +43,7 @@ class CharacterRepository:
         return res.data[0]
 
     def list_characters(self, novel_id: str) -> list[dict]:
-        res = self.sb.table("characters").select("id,name,description,appearance_count").eq("novel_id", novel_id).execute()
+        res = self.sb.table("characters").select("id,name,description,appearance,appearance_count").eq("novel_id", novel_id).execute()
         return res.data or []
 
     def rename_character(self, novel_id: str, old_name: str, new_name: str) -> dict | None:

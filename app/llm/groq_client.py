@@ -25,17 +25,17 @@ def _client() -> Groq:
 def call_text(prompt: str, temperature: float = 0.3) -> str:
     settings = get_settings()
     messages = [{"role": "user", "content": prompt}]
-    logger.info(
-        "[LLM call_text] model=%s temperature=%s\n--- PROMPT ---\n%s\n--------------",
-        settings.llm_model, temperature, prompt,
-    )
+#     logger.info(
+#         "[LLM call_text] model=%s temperature=%s\n--- PROMPT ---\n%s\n--------------",
+#         settings.llm_model, temperature, prompt,
+#     )
     res = _client().chat.completions.create(
         model=settings.llm_model,
         messages=messages,
         temperature=temperature,
     )
     result = (res.choices[0].message.content or "").strip()
-    logger.info("[LLM call_text] --- RESPONSE ---\n%s\n--------------", result)
+#     logger.info("[LLM call_text] --- RESPONSE ---\n%s\n--------------", result)
     return result
 
 
@@ -47,10 +47,10 @@ def call(prompt: str, retries: int = 2) -> str:
         {"role": "system", "content": "Return valid JSON only. No markdown."},
         {"role": "user", "content": prompt},
     ]
-    logger.info(
-        "[LLM call] model=%s temperature=0.2\n--- PROMPT ---\n%s\n--------------",
-        settings.llm_model, prompt,
-    )
+#     logger.info(
+#         "[LLM call] model=%s temperature=0.2\n--- PROMPT ---\n%s\n--------------",
+#         settings.llm_model, prompt,
+#     )
 
     for attempt in range(retries + 1):
         try:
@@ -60,7 +60,7 @@ def call(prompt: str, retries: int = 2) -> str:
                 temperature=0.2,
             )
             text = res.choices[0].message.content or ""
-            logger.info("[LLM call] attempt=%d --- RESPONSE ---\n%s\n--------------", attempt, text)
+#             logger.info("[LLM call] attempt=%d --- RESPONSE ---\n%s\n--------------", attempt, text)
 
             # 빠른 JSON 검증(문서 스펙: JSON만 반환)
             json.loads(text)
