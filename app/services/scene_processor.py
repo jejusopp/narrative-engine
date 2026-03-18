@@ -48,7 +48,7 @@ Past scene references (for name/relationship consistency ONLY — do NOT summari
 Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
-- "summary" must capture ONE visual moment suitable for a single illustration. For each action, clearly specify: WHO does WHAT, to WHOM, and HOW. If an object is involved, specify who owns or uses it. Describe posture and reaction between characters. Write as a plain present-tense statement. Do NOT use meta words that describe the scene as a scene. Keep it to 1-2 sentences.
+- "summary" must be a concise narrative summary of what happens in the scene in 1-2 sentences. Always refer to characters by their exact name from the characters list — never replace names with titles, roles, or generic descriptions. If the location is specific and visually meaningful, include it naturally in the summary. Do NOT describe a single visual moment — summarize the overall content of the scene.
 - Use known character names when possible to avoid duplicates
 - In first-person narratives, the narrator ("나"/"내") should be listed as "주인공" unless their real name is explicitly mentioned in the scene.
 - If the narrator's real name is revealed in the scene, set "narrator_real_name" to that name AND use the real name in the characters list instead of "주인공".

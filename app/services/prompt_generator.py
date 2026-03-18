@@ -33,6 +33,7 @@ Task:
 Write ONE English sentence describing the key action of this scene.
 
 Rules:
+- If the scene contains multiple events, pick only the single most visually compelling moment.
 - Structure: Subject → Action → Object → Result.
 - The action must be happening now, not about to happen.
 - Clearly identify who does what to whom.
