@@ -5,7 +5,7 @@ from app.llm.groq_client import call_text
 _DEFAULT_APPEARANCE = "a person"
 
 
-def generate(scene_summary: str, characters: list[dict]) -> str:
+def generate(scene_summary: str, characters: list[dict], tone: str = "") -> str:
     # 캐릭터 이름 → 외모 묘사로 치환
     replaced = scene_summary
     for c in characters:
@@ -18,8 +18,16 @@ def generate(scene_summary: str, characters: list[dict]) -> str:
         appearance = (raw or "").strip() or _DEFAULT_APPEARANCE
         replaced = replaced.replace(name, f"({appearance})")
 
-    # 치환된 한국어 문장을 영어로 번역
-    return call_text(
-        f"Translate the following into one concise English sentence for image generation. Return only the sentence.\n\n{replaced}",
-        temperature=0.1,
-    )
+    tone_line = f"Mood: {tone}\n" if tone else ""
+
+    prompt = f"""Translate the following Korean scene into one concise English sentence for image generation.
+Rules:
+- Describe the overall situation, not individual characters in isolation.
+- Write as a wide-shot scene illustration (full-body characters, not close-up portraits).
+- Include background/setting ONLY if the scene clearly implies a specific location. If not, omit background entirely.
+- Return only the final sentence.
+
+{tone_line}Scene:
+{replaced}"""
+
+    return call_text(prompt, temperature=0.1)

@@ -16,14 +16,14 @@
   },
   "4": {
     "inputs": {
-      "ckpt_name": "ghibli-diffusion-v1.ckpt"
+      "ckpt_name": "animagine-xl-3.1.safetensors"
     },
     "class_type": "CheckpointLoaderSimple"
   },
   "5": {
     "inputs": {
-      "width": 384,
-      "height": 512,
+      "width": 1024,
+      "height": 576,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage"
@@ -37,7 +37,7 @@
   },
   "7": {
     "inputs": {
-      "text": "embedding:negative_hand, low quality, bad anatomy, text, watermark, signature",
+      "text": "nsfw, lowres, (bad), text, error, fewer, extra, missing, worst quality, jpeg artifacts, low quality, watermark, unfinished, displeasing, oldest, early, chromatic aberration, signature, extra digits, artistic error, username, scan, [abstract]",
       "clip": [ "4", 1 ]
     },
     "class_type": "CLIPTextEncode"

@@ -26,14 +26,14 @@ class ImageService:
             self.workflow_template = json.load(f)
 
     def _enrich_prompt(self, base_prompt: str) -> str:
-        """지브리 스타일의 고품질 삽화를 위해 프롬프트 강화"""
-        style_suffix = (
-            ", Studio Ghibli art style, anime style, "
-            "vibrant colors, detailed background, hand-drawn, "
-            "soft lighting, cinematic composition, high quality, "
-            "masterpiece, beautiful scenery"
-        )
-        return base_prompt + style_suffix
+        # style_suffix = (
+        #     ", Studio Ghibli art style, anime style, "
+        #     "vibrant colors, detailed background, hand-drawn, "
+        #     "soft lighting, cinematic composition, high quality, "
+        #     "masterpiece, beautiful scenery"
+        # )
+        # return base_prompt + style_suffix
+        return base_prompt
 
     def generate_image_for_scene(self, scene_id: str, prompt: str) -> Dict[str, Any]:
         """특정 씬에 대해 이미지를 생성하고 저장 (BackgroundTasks에서 호출 권장)"""
@@ -50,6 +50,8 @@ class ImageService:
 
             # 2. 프롬프트 강화
             enriched_prompt = self._enrich_prompt(prompt)
+            logger.info("[image_service] base_prompt: %s", prompt)
+            logger.info("[image_service] enriched_prompt: %s", enriched_prompt)
 
             # 3. 워크플로우 주입
             workflow = self.workflow_template.copy()
