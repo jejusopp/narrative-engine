@@ -26,14 +26,8 @@ class ImageService:
             self.workflow_template = json.load(f)
 
     def _enrich_prompt(self, base_prompt: str) -> str:
-        # style_suffix = (
-        #     ", Studio Ghibli art style, anime style, "
-        #     "vibrant colors, detailed background, hand-drawn, "
-        #     "soft lighting, cinematic composition, high quality, "
-        #     "masterpiece, beautiful scenery"
-        # )
-        # return base_prompt + style_suffix
-        return base_prompt
+        style_tags = "wide shot, full body, anime illustration style, dynamic action, cinematic composition"
+        return f"{base_prompt}, {style_tags}"
 
     def generate_image_for_scene(self, scene_id: str, prompt: str) -> Dict[str, Any]:
         """특정 씬에 대해 이미지를 생성하고 저장 (BackgroundTasks에서 호출 권장)"""
