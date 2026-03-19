@@ -71,7 +71,8 @@ def generate_image_endpoint(scene_id: str, background_tasks: BackgroundTasks):
     
     # 2. 이미지 프롬프트 생성 (기존 prompt_generator 활용하거나 직접 호출)
     from app.services.prompt_generator import generate as generate_image_prompt
-    image_prompt = generate_image_prompt(scene_summary=summary, characters=characters, tone=tone)
+    first_summary = (summary or "").split("\n")[0].strip()
+    image_prompt = generate_image_prompt(scene_summary=first_summary, characters=characters, tone=tone)
     
     # 3. 백그라운드 작업으로 이미지 생성 실행
     sb.table("scenes").update({"status": "processing"}).eq("id", scene_id).execute()
