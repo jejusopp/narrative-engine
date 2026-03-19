@@ -27,6 +27,15 @@ class RelationshipRepository:
         res = self.sb.table("relationships").insert(payload).execute()
         return res.data[0]
 
+    def list_novel_relationships(self, novel_id: str) -> list[dict]:
+        res = (
+            self.sb.table("relationships")
+            .select("character_a, character_b, relationship, confidence")
+            .eq("novel_id", novel_id)
+            .execute()
+        )
+        return res.data or []
+
     def list_character_relationships(self, character_id: str) -> list[dict]:
         # 특정 캐릭터가 연관된 모든 관계 조회
         # character_a 가 해당 캐릭터인 경우

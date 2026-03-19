@@ -48,7 +48,7 @@ Past scene references (for name/relationship consistency ONLY — do NOT summari
 Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
-- "summary" must be a concise narrative summary of what happens in the scene in 1-2 sentences. Always refer to characters by their exact name from the characters list — never replace names with titles, roles, or generic descriptions. If the location is specific and visually meaningful, include it naturally in the summary. Do NOT describe a single visual moment — summarize the overall content of the scene.
+- "summary" must be a concise narrative summary of what happens in the scene in 1-2 sentences. Always refer to characters by their exact name from the characters list — never replace names with titles, roles, or generic descriptions. Carefully identify the correct subject of each action — do not misattribute actions to the wrong character. If the location is specific and visually meaningful, include it naturally in the summary. Do NOT describe a single visual moment — summarize the overall content of the scene.
 - Use known character names when possible to avoid duplicates
 - In first-person narratives, the narrator ("나"/"내") should be listed as "주인공" unless their real name is explicitly mentioned in the scene.
 - If the narrator's real name is revealed in the scene, set "narrator_real_name" to that name AND use the real name in the characters list instead of "주인공".
@@ -57,7 +57,8 @@ Rules:
 - If a role-based reference cannot be matched to any known character AND no real name is given in this scene, skip that character entirely.
 - Characters list must include ONLY named or clearly identified characters
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "...", "appearance": "..."}}
-- "appearance": STRICTLY physical and visible traits only. Always include gender and estimated age group (child / teenager / young adult / middle-aged / elderly) first — infer from context if not explicitly stated. Then add up to 2 more visual traits (hair, eyes, build, etc.). EXCLUDE anything that cannot be drawn: voice, sound, smell, emotion, action, personality. Max 3 items total.
+- "description": the character's role, background, or relationship to others — NO visual or physical traits (those go in appearance only).
+- "appearance": STRICTLY physical and visible traits only. Include age group combined with gender ONLY if clearly stated or strongly implied — use natural descriptive terms like "young boy", "young girl", "young man", "young woman", "middle-aged man". Do NOT guess age if ambiguous. Then add up to 2 more visual traits (hair, eyes, build, etc.). EXCLUDE anything that cannot be drawn. Max 3 items total. If nothing visual is described, set to null.
 - IMPORTANT: All values in the JSON MUST be written in Korean.
 
 Expected JSON Structure (Strictly follow this structure):
@@ -67,7 +68,7 @@ Expected JSON Structure (Strictly follow this structure):
   "tone": "mood or atmosphere of the scene (Korean)",
   "narrator_real_name": null,
   "characters": [
-    {{"name": "character name (Korean)", "description": "brief character description (Korean)", "appearance": "visual traits only, or null"}}
+    {{"name": "character name (Korean)", "description": "role, background, title, or relationship to others (Korean) — no physical traits", "appearance": "visual traits only, or null"}}
   ],
   "relationships": [
     {{"character_a": "name A", "character_b": "name B", "relationship": "relationship description (Korean)", "confidence": 0.9}}

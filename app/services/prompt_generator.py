@@ -37,6 +37,9 @@ Rules:
 - Structure: Subject → Action → Object → Result.
 - The action must be happening now, not about to happen.
 - Clearly identify who does what to whom.
+- Focus on the interaction between characters — describe what one does to another.
+- Do NOT describe characters independently or list them.
+- Always include the visible result or reaction of the action.
 - Integrate character appearances naturally into the sentence — do not list them separately.
 - Do NOT include framing, style, or composition words — those will be added separately.
 - No dialogue, no narration, no explanation.

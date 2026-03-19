@@ -32,6 +32,22 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
     char_repo = CharacterRepository()
     known_characters = char_repo.list_characters(novel_id)
 
+    # 관계 정보를 known_characters에 병합
+    rel_repo = RelationshipRepository()
+    all_rels = rel_repo.list_novel_relationships(novel_id)
+    id_to_name = {c["id"]: c["name"] for c in known_characters}
+    rel_map: dict[str, list[str]] = {}
+    for r in all_rels:
+        a_name = id_to_name.get(r["character_a"])
+        b_name = id_to_name.get(r["character_b"])
+        if a_name and b_name:
+            rel_map.setdefault(a_name, []).append(f"{r['relationship']} ({b_name})")
+            rel_map.setdefault(b_name, []).append(f"{r['relationship']} ({a_name})")
+    for c in known_characters:
+        rels = rel_map.get(c["name"], [])
+        if rels:
+            c["relationships"] = rels
+
     retrieved = scene_context_retriever.retrieve(novel_id=novel_id, scene_text=scene_text, top_k=5)
 
     result = process_scene(
