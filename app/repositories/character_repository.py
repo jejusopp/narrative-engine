@@ -14,9 +14,13 @@ class CharacterRepository:
         if existing.data:
             row = existing.data[0]
             update_payload: dict = {
-                "description": description,
                 "appearance_count": (row.get("appearance_count") or 0) + 1,
             }
+            # description은 새 내용이 있고 기존에 없는 내용이면 누적
+            existing_desc = (row.get("description") or "").strip()
+            new_desc = (description or "").strip()
+            if new_desc and new_desc not in existing_desc:
+                update_payload["description"] = f"{existing_desc} / {new_desc}".strip(" /") if existing_desc else new_desc
             # appearance는 기존 값이 없을 때만 저장
             if appearance and not row.get("appearance"):
                 update_payload["appearance"] = appearance

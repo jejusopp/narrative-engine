@@ -58,14 +58,8 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
     )
 
     resolved_characters = resolve_all(result.get("characters", []), novel_id=novel_id, known_characters=known_characters)
-
-    # 주인공 실명이 밝혀진 경우 → DB에서 "주인공" → 실명으로 교체
-    narrator_real_name = (result.get("narrator_real_name") or "").strip()
-    if narrator_real_name:
-        char_repo.rename_character(novel_id=novel_id, old_name="주인공", new_name=narrator_real_name)
-        for ch in resolved_characters:
-            if ch.get("name") == "주인공":
-                ch["name"] = narrator_real_name
+    logger.info("[scene_pipeline] extracted characters: %s", result.get("characters", []))
+    logger.info("[scene_pipeline] resolved characters: %s", resolved_characters)
 
     scene_repo = SceneRepository()
     scene_row = scene_repo.save_scene(
