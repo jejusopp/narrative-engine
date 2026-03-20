@@ -57,6 +57,7 @@ Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
 - "summary" must be 1-3 short sentences, each describing one key event, joined by \n. Focus on what the narrator directly experiences or does — ignore background exposition, historical context, and flashbacks. Each sentence covers one independent event — do not chain events with conjunctions. Use exact character names — never replace with titles or roles. Carefully identify who does what — do not misattribute actions to the wrong character.
+- "events" must be a list of 1–3 key actions the narrator directly experiences, each as one sentence with enough detail to visualize (who does what to whom). Use exact character names — never replace with titles or roles.
 - Use known character names when possible to avoid duplicates
 - In first-person narratives, the narrator ("나"/"내") should be listed as "주인공". If the narrator's real name is mentioned in the scene, include it in the description field.
 - Extract ONLY human characters. Ignore animals, creatures, and objects even if they appear in the scene.
@@ -71,7 +72,8 @@ Rules:
 
 Expected JSON Structure (Strictly follow this structure):
 {{
-  "summary": "one key visual moment (Korean, 1-2 sentences)",
+  "summary": "overall scene summary (Korean, 1 sentence)",
+  "events": ["key event 1 (Korean)", "key event 2 (Korean)"],
   "location": "place where the scene occurs (Korean)",
   "tone": "mood or atmosphere of the scene (Korean)",
   "characters": [

@@ -69,6 +69,7 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         summary=result.get("summary", ""),
         location=result.get("location", ""),
         tone=result.get("tone", ""),
+        events=result.get("events") or [],
         status="completed",
     )
 
@@ -129,8 +130,8 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         for ch in resolved_characters
     ]
     logger.info("[scene_pipeline] chars_for_prompt: %s", chars_for_prompt)
-    first_summary = (result.get("summary", "") or "").split("\n")[0].strip()
-    image_prompt = generate_image_prompt(scene_summary=first_summary, characters=chars_for_prompt, tone=result.get("tone", ""))
+    events = result.get("events") or []
+    image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=chars_for_prompt, tone=result.get("tone", ""), events=events)
     
     # 2024-03-13 수정: 소설 분석 시 이미지를 자동으로 생성하지 않도록 변경. 
     # 사용자가 직접 생성 버튼을 누를 때만 (POST /scenes/{scene_id}/generate-image) 생성하도록 함.

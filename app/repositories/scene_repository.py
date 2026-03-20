@@ -15,6 +15,7 @@ class SceneRepository:
         summary: str,
         location: str,
         tone: str,
+        events: list[str] | None = None,
         status: str = "completed",
     ) -> dict:
         payload = {
@@ -24,6 +25,7 @@ class SceneRepository:
             "summary": summary,
             "location": location,
             "tone": tone,
+            "events": events or [],
             "status": status,
         }
         res = self.sb.table("scenes").insert(payload).execute()

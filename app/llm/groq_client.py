@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 
 from groq import Groq
@@ -62,9 +63,12 @@ def call(prompt: str, retries: int = 2) -> str:
             text = res.choices[0].message.content or ""
 #             logger.info("[LLM call] attempt=%d --- RESPONSE ---\n%s\n--------------", attempt, text)
 
-            # 빠른 JSON 검증(문서 스펙: JSON만 반환)
-            json.loads(text)
-            return text
+            # 마크다운 코드블록 제거 후 JSON 추출
+            match = re.search(r"\{.*\}", text, re.DOTALL)
+            if not match:
+                raise ValueError(f"No JSON found in response: {text[:200]}")
+            json.loads(match.group())
+            return match.group()
         except Exception as e:
             last_err = e
             if attempt < retries:

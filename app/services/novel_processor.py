@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from fastapi import BackgroundTasks
 
 from app.repositories.character_repository import CharacterRepository
@@ -25,6 +27,7 @@ def process_novel(novel_id: str, full_text: str, background_tasks: BackgroundTas
             background_tasks=background_tasks,
         )
         previous_summary = result.get("summary") or previous_summary
+        time.sleep(5)
 
     novel_repo.update_status(novel_id, "completed")
 

@@ -54,25 +54,24 @@ def get_scene_endpoint(scene_id: str):
 def generate_image_endpoint(scene_id: str, background_tasks: BackgroundTasks):
     sb = get_supabase()
     # 씬 정보 확인 및 이미지 생성용 프롬프트 가져오기
-    res = sb.table("scenes").select("id, summary, tone").eq("id", scene_id).execute()
+    res = sb.table("scenes").select("id, summary, events, tone").eq("id", scene_id).execute()
     if not res.data:
         raise HTTPException(status_code=404, detail="Scene not found")
-    
+
     scene = res.data[0]
-    summary = scene["summary"]
+    events = scene.get("events") or []
     tone = scene.get("tone", "")
-    
+
     # 등장인물 목록 가져오기 (appearance 포함)
     char_res = sb.table("character_appearances").select("characters(name, appearance)").eq("scene_id", scene_id).execute()
     characters = [c["characters"] for c in char_res.data if c.get("characters")]
-    
+
     # 1. 이미지 서비스 초기화
     image_service = ImageService()
-    
-    # 2. 이미지 프롬프트 생성 (기존 prompt_generator 활용하거나 직접 호출)
+
+    # 2. 이미지 프롬프트 생성
     from app.services.prompt_generator import generate as generate_image_prompt
-    first_summary = (summary or "").split("\n")[0].strip()
-    image_prompt = generate_image_prompt(scene_summary=first_summary, characters=characters, tone=tone)
+    image_prompt = generate_image_prompt(scene_summary=scene.get("summary", ""), characters=characters, tone=tone, events=events)
     
     # 3. 백그라운드 작업으로 이미지 생성 실행
     sb.table("scenes").update({"status": "processing"}).eq("id", scene_id).execute()

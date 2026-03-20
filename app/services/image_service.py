@@ -26,7 +26,7 @@ class ImageService:
             self.workflow_template = json.load(f)
 
     def _enrich_prompt(self, base_prompt: str) -> str:
-        style_tags = "wide shot, full body, anime illustration style, stylized proportions, soft shading, simplified details, cinematic composition"
+        style_tags = "masterpiece, best quality, very aesthetic, absurdres, anime illustration style, stylized proportions, soft shading, simplified details, interaction, dynamic action"
         return f"{base_prompt}, {style_tags}"
 
     def generate_image_for_scene(self, scene_id: str, prompt: str) -> Dict[str, Any]:
