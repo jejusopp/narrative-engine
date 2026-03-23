@@ -6,12 +6,12 @@
 
 ## 1. 개요
 
-| 단계 | 담당 모듈 | 역할 |
-|------|-----------|------|
-| 추출 | `scene_processor` | 장면 텍스트 기준으로 LLM이 `appearance` 생성 |
-| 이름 매칭 | `character_resolver` | 알려진 캐릭터와 이름 정규화·매칭 (**DB `appearance`는 여기서 읽지 않음**) |
-| 정규화·저장 | `scene_pipeline` | 리스트/`null` 토큰 처리 후 DB upsert |
-| 프롬프트 보완 | `scene_pipeline` → `prompt_generator` | 이번 장면 값이 비면 DB 값 사용, 그래도 없으면 기본 문구 |
+| 단계          | 담당 모듈                             | 역할                                                                      |
+| ------------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| 추출          | `scene_processor`                     | 장면 텍스트 기준으로 LLM이 `appearance` 생성                              |
+| 이름 매칭     | `character_resolver`                  | 알려진 캐릭터와 이름 정규화·매칭 (**DB `appearance`는 여기서 읽지 않음**) |
+| 정규화·저장   | `scene_pipeline`                      | 리스트/`null` 토큰 처리 후 DB upsert                                      |
+| 프롬프트 보완 | `scene_pipeline` → `prompt_generator` | 이번 장면 값이 비면 DB 값 사용, 그래도 없으면 기본 문구                   |
 
 **한 줄 요약:** 외모의 1차 소스는 **항상 해당 장면에 대한 LLM 출력**이고, **이전에 쌓인 DB 외모는 이미지 프롬프트 조립 시에만** fallback으로 붙습니다.
 
@@ -70,12 +70,12 @@
 
 ## 6. 관련 파일
 
-| 파일 | 내용 |
-|------|------|
-| `app/services/scene_processor.py` | LLM 프롬프트 및 JSON 구조 정의 |
-| `app/services/character_resolver.py` | 이름 정규화·매칭, `appearance`는 추출값만 전달 |
-| `app/services/scene_pipeline.py` | 정규화, upsert, `db_appearance` fallback, `generate_image_prompt` 호출 |
-| `app/services/prompt_generator.py` | 캐릭터 블록 조립, 빈 외모 시 기본 문구 |
+| 파일                                 | 내용                                                                   |
+| ------------------------------------ | ---------------------------------------------------------------------- |
+| `app/services/scene_processor.py`    | LLM 프롬프트 및 JSON 구조 정의                                         |
+| `app/services/character_resolver.py` | 이름 정규화·매칭, `appearance`는 추출값만 전달                         |
+| `app/services/scene_pipeline.py`     | 정규화, upsert, `db_appearance` fallback, `generate_image_prompt` 호출 |
+| `app/services/prompt_generator.py`   | 캐릭터 블록 조립, 빈 외모 시 기본 문구                                 |
 
 ---
 

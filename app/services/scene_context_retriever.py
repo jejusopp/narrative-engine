@@ -7,7 +7,7 @@ from app.repositories.scene_embedding_repository import SceneEmbeddingRepository
 def retrieve(
     novel_id: str,
     scene_text: str,
-    top_k: int = 5,
+    top_k: int = 2,
     exclude_scene_ids: list[str] | None = None,
 ) -> list[dict]:
     # 너무 긴 텍스트는 앞부분만 사용 (임베딩 비용/시간 절감)

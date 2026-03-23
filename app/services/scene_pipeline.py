@@ -18,14 +18,60 @@ from app.services.scene_processor import process as process_scene
 from app.services.image_service import ImageService
 
 
-def _build_embedding_content(summary: str, location: str, tone: str, characters: list[dict]) -> str:
-    names = [c.get("name") for c in characters if c.get("name")]
-    return (
-        f"Summary: {summary}\n"
-        f"Location: {location}\n"
-        f"Tone: {tone}\n"
-        f"Characters: {', '.join(names)}"
-    )
+def _build_scene_context_embedding_content(
+    characters: list[dict],
+    relationships: list[dict] | None,
+    summary_fallback: str = "",
+) -> str:
+    """RAG·중복 판별용: 요약 대신 등장 인물(설명·외형)과 씬 관계를 임베딩한다."""
+    lines: list[str] = []
+
+    char_lines: list[str] = []
+    for ch in characters or []:
+        name = (ch.get("name") or "").strip()
+        if not name:
+            continue
+        desc = (ch.get("description") or "").strip()
+        app = ch.get("appearance")
+        if isinstance(app, list):
+            app = ", ".join(str(x) for x in app if x)
+        app = (str(app).strip() if app else "").strip()
+        if app.lower() == "null":
+            app = ""
+        block = [f"- {name}"]
+        if desc:
+            block.append(f"  설명: {desc}")
+        if app:
+            block.append(f"  외형: {app}")
+        char_lines.append("\n".join(block))
+
+    if char_lines:
+        lines.append("등장 인물:")
+        lines.extend(char_lines)
+
+    rel_lines: list[str] = []
+    for r in relationships or []:
+        a = (r.get("character_a") or "").strip()
+        b = (r.get("character_b") or "").strip()
+        rel = (r.get("relationship") or "").strip()
+        if not a or not b:
+            continue
+        if rel:
+            rel_lines.append(f"- {a} — {rel} — {b}")
+        else:
+            rel_lines.append(f"- {a}, {b}")
+
+    if rel_lines:
+        if lines:
+            lines.append("")
+        lines.append("관계:")
+        lines.extend(rel_lines)
+
+    text = "\n".join(lines).strip()
+    if text:
+        return text
+    fb = (summary_fallback or "").strip()
+    return fb if fb else "(등장 인물·관계 없음)"
 
 
 def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_tasks: BackgroundTasks | None = None) -> dict:
@@ -48,7 +94,7 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         if rels:
             c["relationships"] = rels
 
-    retrieved = scene_context_retriever.retrieve(novel_id=novel_id, scene_text=scene_text, top_k=5)
+    retrieved = scene_context_retriever.retrieve(novel_id=novel_id, scene_text=scene_text, top_k=2)
 
     result = process_scene(
         scene_text=scene_text,
@@ -112,12 +158,11 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
             )
         )
 
-    # RAG 임베딩 저장
-    content = _build_embedding_content(
-        summary=result.get("summary", ""),
-        location=result.get("location", ""),
-        tone=result.get("tone", ""),
+    # RAG 임베딩 저장 (과거 씬 검색 시 캐릭터 정체·관계·중복 판별 맥락용)
+    content = _build_scene_context_embedding_content(
         characters=resolved_characters,
+        relationships=result.get("relationships") or [],
+        summary_fallback=result.get("summary") or "",
     )
     emb = embed(content)
     SceneEmbeddingRepository().upsert(scene_id=scene_row["id"], novel_id=novel_id, content=content, embedding=emb)

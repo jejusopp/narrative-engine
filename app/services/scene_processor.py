@@ -56,18 +56,14 @@ Past scene references (for name/relationship consistency ONLY — do NOT summari
 Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
-- "summary" must be 1-3 short sentences, each describing one key event, joined by \n. Focus on what the narrator directly experiences or does — ignore background exposition, historical context, and flashbacks. Each sentence covers one independent event — do not chain events with conjunctions. Use exact character names — never replace with titles or roles. Carefully identify who does what — do not misattribute actions to the wrong character.
-- "events" must be a list of 1–3 key actions the narrator directly experiences, each as one sentence with enough detail to visualize (who does what to whom). Use exact character names — never replace with titles or roles.
-- Use known character names when possible to avoid duplicates
-- In first-person narratives, the narrator ("나"/"내") should be listed as "주인공". If the narrator's real name is mentioned in the scene, include it in the description field.
-- Extract ONLY human characters. Ignore animals, creatures, and objects even if they appear in the scene.
-- Ignore generic background characters (man, woman, soldier, stranger)
-- When a character is referred to only by a role or title (e.g. father, teacher, captain), check Known Characters and past references to find if this role matches an already-known character. If matched, use the known character's name — do NOT create a duplicate.
-- If a role-based reference cannot be matched to any known character AND no real name is given in this scene, skip that character entirely.
-- Characters list must include ONLY named or clearly identified characters
+- "summary": 1-6 sentences joined by \n, capturing key events in Scene Text with enough detail to preserve meaning; no flashback/background summary.
+- "events": 1-6 sentences about direct narrator-experienced actions (who does what to whom).
+- Character dedupe rule: cross-check BOTH Known Characters and Past scene references (retrieved_context). If matched (including role/title mentions), reuse existing name; if unmatched but directly involved in key action/dialogue, add as NEW; skip incidental background mentions.
+- In first-person narratives, narrator ("나"/"내") must be "주인공". If real name appears in this scene, include it in description.
+- Extract only human, named/clearly identified characters (ignore animals/objects and generic background roles like man/woman/soldier/stranger).
 - Each character in the 'characters' list MUST be an object: {{"name": "...", "description": "...", "appearance": "..."}}
-- "description": WHO the character is — role, title, occupation, or relationship to others only. Never include visual traits here.
-- "appearance": What you would see if you took a photo of this character — gender, age group, and visible physical traits. Infer gender and age from context (names, titles, pronouns). Add up to 2 explicitly described visual traits (hair, eyes, build, clothing). Voice, sound, emotions, and personality are NOT visible in a photo — never include them. Max 3 items. Set null only if nothing at all can be seen or inferred.
+- "description": role/title/occupation/relationship only (no visual traits).
+- "appearance": visual traits only (gender/age + up to 2 visible traits); no voice/emotion/personality; null if unknown.
 - IMPORTANT: All values in the JSON MUST be written in Korean.
 
 Expected JSON Structure (Strictly follow this structure):
