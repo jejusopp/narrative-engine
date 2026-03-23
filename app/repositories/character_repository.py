@@ -1,6 +1,28 @@
 from __future__ import annotations
 
+import re
+
 from app.db.supabase import get_supabase
+
+
+def _split_description_parts(text: str) -> list[str]:
+    parts = re.split(r"[/,]", text)
+    return [p.strip() for p in parts if p and p.strip()]
+
+
+def _merge_description(existing_desc: str, new_desc: str) -> str:
+    """Merge character descriptions without duplicate phrases."""
+    existing_parts = _split_description_parts(existing_desc)
+    new_parts = _split_description_parts(new_desc)
+    merged: list[str] = []
+    seen: set[str] = set()
+    for part in [*existing_parts, *new_parts]:
+        key = part.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(part)
+    return ", ".join(merged)
 
 
 class CharacterRepository:
@@ -16,11 +38,13 @@ class CharacterRepository:
             update_payload: dict = {
                 "appearance_count": (row.get("appearance_count") or 0) + 1,
             }
-            # description은 새 내용이 있고 기존에 없는 내용이면 누적
+            # description은 토큰 단위로 병합하여 중복 문구 누적을 방지
             existing_desc = (row.get("description") or "").strip()
             new_desc = (description or "").strip()
-            if new_desc and new_desc not in existing_desc:
-                update_payload["description"] = f"{existing_desc} / {new_desc}".strip(" /") if existing_desc else new_desc
+            if new_desc:
+                merged_desc = _merge_description(existing_desc, new_desc) if existing_desc else ", ".join(_split_description_parts(new_desc))
+                if merged_desc and merged_desc != existing_desc:
+                    update_payload["description"] = merged_desc
             # appearance는 기존 값이 없을 때만 저장
             if appearance and not row.get("appearance"):
                 update_payload["appearance"] = appearance

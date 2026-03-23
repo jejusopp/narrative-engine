@@ -30,7 +30,6 @@ def _format_retrieved_context(retrieved_context: list[dict] | None) -> str:
 
 def process(
     scene_text: str,
-    previous_summary: str | None,
     known_characters: list[dict],
     retrieved_context: list[dict] | None = None,
 ) -> dict:
@@ -56,7 +55,8 @@ Past scene references (for name/relationship consistency ONLY — do NOT summari
 Rules:
 - Return valid JSON only, no markdown
 - summary, location, tone MUST be derived from the Scene Text above, not from past references
-- "summary": 1-6 sentences joined by \n, capturing key events in Scene Text with enough detail to preserve meaning; no flashback/background summary.
+- "summary": 1-4 concise sentences joined by \n. Keep total length under 320 Korean characters. Capture only the most important outcome-level facts from Scene Text; no flashback/background summary.
+- Do NOT copy long narrative wording or quotes from Scene Text. Use compressed paraphrase.
 - "events": 1-6 sentences about direct narrator-experienced actions (who does what to whom).
 - Character dedupe rule: cross-check BOTH Known Characters and Past scene references (retrieved_context). If matched (including role/title mentions), reuse existing name; if unmatched but directly involved in key action/dialogue, add as NEW; skip incidental background mentions.
 - In first-person narratives, narrator ("나"/"내") must be "주인공". If real name appears in this scene, include it in description.
@@ -68,8 +68,8 @@ Rules:
 
 Expected JSON Structure (Strictly follow this structure):
 {{
-  "summary": "overall scene summary (Korean, 1 sentence)",
-  "events": ["key event 1 (Korean)", "key event 2 (Korean)"],
+  "summary": "overall scene summary (Korean, 1-4 concise sentences separated by \\n, under 320 chars total)",
+  "events": ["key event 1 (Korean)", "key event 2 (Korean)", ...],
   "location": "place where the scene occurs (Korean)",
   "tone": "mood or atmosphere of the scene (Korean)",
   "characters": [

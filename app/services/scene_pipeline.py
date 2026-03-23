@@ -74,6 +74,21 @@ def _build_scene_context_embedding_content(
     return fb if fb else "(등장 인물·관계 없음)"
 
 
+def _dedupe_event_sentences(events: list[str] | None) -> list[str]:
+    unique: list[str] = []
+    seen: set[str] = set()
+    for e in events or []:
+        text = str(e).strip()
+        if not text:
+            continue
+        key = " ".join(text.split()).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(text)
+    return unique
+
+
 def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_tasks: BackgroundTasks | None = None) -> dict:
     char_repo = CharacterRepository()
     known_characters = char_repo.list_characters(novel_id)
@@ -98,10 +113,10 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
 
     result = process_scene(
         scene_text=scene_text,
-        previous_summary=None,
         known_characters=known_characters,
         retrieved_context=retrieved,
     )
+    cleaned_events = _dedupe_event_sentences(result.get("events"))
 
     resolved_characters = resolve_all(result.get("characters", []), novel_id=novel_id, known_characters=known_characters)
     logger.info("[scene_pipeline] extracted characters: %s", result.get("characters", []))
@@ -115,7 +130,7 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         summary=result.get("summary", ""),
         location=result.get("location", ""),
         tone=result.get("tone", ""),
-        events=result.get("events") or [],
+        events=cleaned_events,
         status="completed",
     )
 
@@ -175,7 +190,7 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         for ch in resolved_characters
     ]
     logger.info("[scene_pipeline] chars_for_prompt: %s", chars_for_prompt)
-    events = result.get("events") or []
+    events = cleaned_events
     image_prompt = generate_image_prompt(scene_summary=result.get("summary", ""), characters=chars_for_prompt, tone=result.get("tone", ""), events=events)
     
     # 2024-03-13 수정: 소설 분석 시 이미지를 자동으로 생성하지 않도록 변경. 
@@ -190,6 +205,7 @@ def analyze_scene(novel_id: str, scene_index: int, scene_text: str, background_t
         "location": result.get("location", ""),
         "tone": result.get("tone", ""),
         "characters": resolved_characters,
+        "events": cleaned_events,
         "relationships": [
             {
                 "character_a": r.get("character_a"),
